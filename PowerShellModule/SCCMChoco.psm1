@@ -238,16 +238,18 @@ function Add-SCCMChocoApplication
     $packageid = $chocourl.Split("/")[-1]
 
     #find package
-    $package = Find-Package -Name $packageid -ProviderName chocolatey
+    #$package = Find-Package -Name $packageid -ProviderName chocolatey
+    $package = choco search putty -e -r
     if ($package -eq $null)
     {
         throw "###########   Cannot find package, please verify if the URL is valid. ############"
     }
 
-
     #get icon url
-    [xml]$swid = $package.SwidTagText
-    $iconurl = (($swid.SoftwareIdentity.Link | ?{$_.rel -match "icon"}).href.split("?")[0])
+    
+    $nuspecurl = "https://artifactory.imp.ac.at/localchoco/" + $package.replace("|",".") + ".nupkg!\" + $package.split("|")[0] + ".nuspec"
+    [xml]$nuspec = Invoke-WebRequest $nuspecurl
+    $iconurl = $nuspec.package.metadata.iconUrl
     #endregion
 
     #region prepareicon
